@@ -65,10 +65,7 @@ Ready-to-flash Intel HEX files are located in [`firmwares/custom_firmware/v4/`](
 ### Step 1. Preparation
 1. Connect your XP-Pen Deco 01 V3 tablet to your computer via USB.
 2. Close the official XP-Pen driver software from the system tray to prevent USB endpoint conflicts.
-3. Open a PowerShell or Command Prompt terminal in the project root:
-   ```powershell
-   cd E:\Coding\tablet-reverse-engeneering
-   ```
+3. Open a PowerShell or Command Prompt terminal in the project root
 
 ### Step 2. Enter DFU Bootloader Mode
 Run:
