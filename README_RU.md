@@ -62,9 +62,6 @@ tablet-reverse-engeneering/
 1. Подключите планшет XP-Pen Deco 01 V3 к компьютеру через USB.
 2. Закройте официальный драйвер XP-Pen в трее, чтобы он не перехватывал USB-трафик.
 3. Откройте терминал PowerShell в папке проекта:
-   ```powershell
-   cd E:\Coding\tablet-reverse-engeneering
-   ```
 
 ### Шаг 2. Перевод в режим загрузчика (DFU)
 Выполните команду:
