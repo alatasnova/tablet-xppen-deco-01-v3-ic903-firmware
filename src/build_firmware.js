@@ -28,33 +28,33 @@ function printBanner() {
 
 function printHelp() {
   printBanner();
-  console.log(`Использование:
-  node src/build_firmware.js [опции]
+  console.log(`Usage:
+  node src/build_firmware.js [options]
 
-Опции:
-  --version <v1|v2|v3|v4> Версия архитектуры патча (по умолчанию: v4)
-  --hz <250|500|1000>     Частота опроса USB HID (по умолчанию: 500)
-  --no-smoothing          Включить отключение сглаживания (No-Smoothing)
-  --all                   Собрать все основные варианты прошивки для выбранной версии
-  --output <dir>          Целевая папка для сохранения (по умолчанию: firmwares/custom_firmware/<version>)
-  --help, -h              Показать эту справку
+Options:
+  --version <v1|v2|v3|v4> Patch architecture version (default: v4)
+  --hz <250|500|1000>     USB HID polling rate (default: 500)
+  --no-smoothing          Enable hardware zero-smoothing bypass (raw coordinates)
+  --all                   Build all standard firmware variants for selected version
+  --output <dir>          Target output directory (default: firmwares/custom_firmware/<version>)
+  --help, -h              Show this help message
 
-Примеры:
-  # Собрать все прошивки v4 (500Hz, 500Hz+NoSmoothing, 1000Hz+NoSmoothing, Stock+NoSmoothing):
+Examples:
+  # Build all v4 firmware binaries (500Hz, 500Hz+NoSmoothing, 1000Hz+NoSmoothing, Stock+NoSmoothing):
   node src/build_firmware.js --all --version v4
 
-  # Собрать только 500Hz + No-Smoothing v4:
+  # Build 500Hz + No-Smoothing v4 only:
   node src/build_firmware.js --version v4 --hz 500 --no-smoothing
 `);
 }
 
 function verifyPrerequisites() {
   if (!fs.existsSync(STOCK_BIN)) {
-    console.error(`[ОШИБКА] Не найден оригинальный дамп: ${STOCK_BIN}`);
+    console.error(`[ERROR] Stock firmware dump not found: ${STOCK_BIN}`);
     process.exit(1);
   }
   if (!fs.existsSync(TOOLS_EXE)) {
-    console.error(`[ОШИБКА] Не найдена утилита xppen-tools: ${TOOLS_EXE}`);
+    console.error(`[ERROR] Flashing tool xppen-tools not found: ${TOOLS_EXE}`);
     process.exit(1);
   }
 }
@@ -238,8 +238,8 @@ function buildTarget(stockBuf, options, outDir) {
   fs.writeFileSync(binPath, bin);
   compileHex(binPath, hexPath);
 
-  console.log(`  [OK] Собрано: ${path.relative(ROOT_DIR, hexPath)}`);
-  console.log(`       Патчей применено: ${diffLog.length} правок, байт изменено: ${bin.filter((b, i) => b !== stockBuf[i]).length}`);
+  console.log(`  [OK] Built: ${path.relative(ROOT_DIR, hexPath)}`);
+  console.log(`       Patches applied: ${diffLog.length} edits, bytes changed: ${bin.filter((b, i) => b !== stockBuf[i]).length}`);
   return { hexPath, binPath };
 }
 
@@ -271,18 +271,18 @@ function main() {
   if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
 
   printBanner();
-  console.log(`Целевая версия: ${version.toUpperCase()}`);
-  console.log(`Папка вывода:   ${path.relative(ROOT_DIR, outDir)}\n`);
+  console.log(`Target Version:   ${version.toUpperCase()}`);
+  console.log(`Output Directory: ${path.relative(ROOT_DIR, outDir)}\n`);
 
   if (buildAll) {
-    console.log(`Сборка полного набора прошивок для ревизии [${version}]:\n`);
+    console.log(`Building full firmware suite for revision [${version}]:\n`);
     // 1. 500Hz + NoSmoothing
     buildTarget(stockBuf, { version, hz: 500, noSmoothing: true }, outDir);
     // 2. 500Hz Stock Smoothing
     buildTarget(stockBuf, { version, hz: 500, noSmoothing: false }, outDir);
     // 3. Stock 250Hz + NoSmoothing
     buildTarget(stockBuf, { version, hz: 250, noSmoothing: true }, outDir);
-    // 4. Опционально 1000Hz + NoSmoothing для v3 / v4
+    // 4. Optional 1000Hz + NoSmoothing for v3 / v4
     if (version === 'v3' || version === 'v4') {
       buildTarget(stockBuf, { version, hz: 1000, noSmoothing: true }, outDir);
     }
@@ -290,7 +290,7 @@ function main() {
     buildTarget(stockBuf, { version, hz, noSmoothing }, outDir);
   }
 
-  console.log(`\nГотово! Прошивки сохранены в: ${path.relative(ROOT_DIR, outDir)}`);
+  console.log(`\nDone! Firmware binaries saved to: ${path.relative(ROOT_DIR, outDir)}`);
 }
 
 main();

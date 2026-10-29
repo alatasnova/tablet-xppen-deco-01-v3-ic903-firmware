@@ -1,97 +1,101 @@
 # XP-Pen Deco 01 V3 (IC903 / Rev B) — Custom Firmware
 
-Кастомная прошивка для графического планшета **XP-Pen Deco 01 V3** на базе микроконтроллера **IC903** (аппаратная ревизия **Rev B**).
+Custom high-performance firmware for the **XP-Pen Deco 01 V3** graphics tablet powered by the **IC903** microcontroller (**Rev B** hardware revision).
+
+> 🇷🇺 **Russian documentation**: [README_RU.md](README_RU.md)  
+> 🔬 **Technical Reverse Engineering Dossier**: [TASK.md](TASK.md)
 
 ---
 
-## ⚡ Возможности прошивки
+## ⚡ Key Features
 
-* 🚀 **Разгон частоты опроса (Polling Rate)**:
-  * Штатная частота: **~220–240 Гц** (bInterval = 4 мс).
-  * Кастомная прошивка v4: **до 400–500 Гц** благодаря оптимизации сканирования матрицы катушек (5-Coil Optimization) и разгону аппаратных таймеров.
-* 🎯 **Полное отключение сглаживания (No-Smoothing / Raw Coordinates)**:
-  * Аппаратный обход встроенных сглаживающих фильтров.
-  * Абсолютно нулевая задержка (input lag) и 1:1 передача микротраектории пера.
-  * Идеально для ритм-игр (**osu!**) и точного скетчинга.
-* 🛡️ **Безопасная архитектура**:
-  * Модифицируется **исключительно** секция приложения (`ic903-code.bin`, базовый адрес `0x00006000`).
-  * Заводской загрузчик (Bootloader) и страницы калибровки/состояния остаются нетронутыми. В любой момент можно вернуться на заводскую прошивку.
+* 🚀 **Polling Rate Overclocking**:
+  * Stock polling rate: **~220–240 Hz** (`bInterval = 4 ms`).
+  * Custom firmware v4: **up to 400–500 Hz** via coil matrix scan optimization (**5-Coil Optimization**) and hardware timer overclocking.
+* 🎯 **Hardware Zero-Smoothing (Raw Coordinates)**:
+  * Hardware-level bypass of built-in smoothing and jitter-reduction filters.
+  * True 1:1 raw coordinate reporting with zero interpolation lag.
+  * Essential for rhythm games (**osu!**) and ultra-responsive sketching/drawing.
+* 🛡️ **Safe Flashing Architecture**:
+  * Only modifies the application code section (`ic903-code.bin`, base address `0x00006000`).
+  * Factory DFU bootloader and calibration/state pages are untouched. Reverting to factory stock firmware is always possible.
 
 ---
 
-## 📁 Структура проекта
+## 📁 Repository Layout
 
 ```text
 tablet-reverse-engeneering/
-├── README.md               # Руководство пользователя (этот файл)
-├── TASK.md                 # Техническая документация и заметки реверс-инжиниринга
+├── README.md               # Main User Guide (English)
+├── README_RU.md            # User Guide (Russian)
+├── TASK.md                 # Technical Reverse Engineering Specification & Notes
 ├── firmwares/
-│   ├── custom_firmware/    # Готовые кастомные прошивки (.bin и .hex), разбитые по версиям
-│   │   ├── v4/             # Актуальная версия (5-Coil Optimization, 400–500Hz)
-│   │   ├── v3/             # Предыдущая версия (Scaled Carrier, ~325–342Hz)
-│   │   ├── v2/             # Версия 300Hz
-│   │   └── v1/             # Начальная версия 270Hz
-│   ├── original_firmware/  # Чистый заводской дамп Deco 01 V3 Rev B
-│   └── reference_firmware/ # Референсные прошивки чипсета IC902 от NiceAesth
+│   ├── custom_firmware/    # Ready-to-flash custom firmwares (.bin and .hex)
+│   │   ├── v4/             # Current release (5-Coil Optimization, 400–500Hz)
+│   │   ├── v3/             # Intermediate release (Scaled Carrier Table, ~325–342Hz)
+│   │   ├── v2/             # 300Hz release
+│   │   └── v1/             # Initial 270Hz release
+│   ├── original_firmware/  # Clean factory dump for Deco 01 V3 Rev B
+│   └── reference_firmware/ # Reference IC902 dumps & patches by NiceAesth
 ├── src/
-│   ├── build_firmware.js   # Генератор и компилятор кастомных прошивок
-│   ├── analyze_firmware.js # Анализатор параметров бинарного файла
-│   └── diff_ic902.js       # Анализатор различий стока и мода IC902
+│   ├── build_firmware.js   # Automated firmware patch engine and compiler
+│   ├── analyze_firmware.js # Binary inspection and parameter verification tool
+│   └── diff_ic902.js       # IC902 stock vs patched comparative analyzer
 └── tools/
-    └── xppen-tools.exe     # Утилита DFU/прошивки (от NiceAesth)
+    └── xppen-tools.exe     # XP-Pen/UGEE DFU flashing utility (by NiceAesth)
 ```
 
 ---
 
-## 🎮 Готовые файлы прошивок (Ревизия v4)
+## 🎮 Pre-Built Firmware Binaries (Revision v4)
 
-Все готовые к прошивке файлы находятся в папке [`firmwares/custom_firmware/v4/`](firmwares/custom_firmware/v4/):
+Ready-to-flash Intel HEX files are located in [`firmwares/custom_firmware/v4/`](firmwares/custom_firmware/v4/):
 
-| Файл прошивки | Частота USB | Сглаживание | Назначение |
+| Firmware File | USB Rate | Smoothing | Description |
 |---|---|---|---|
-| **`ic903-500hz-nosmoothing-v4.hex`** | **500 Гц** | **Отключено (Zero)** | **Рекомендуется:** максимальная отзывчивость для osu! и рисования |
-| **`ic903-500hz-v4.hex`** | **500 Гц** | Включено (сток) | Высокая частота с плавным заводским сглаживанием |
-| **`ic903-1000hz-nosmoothing-v4.hex`** | **1000 Гц** | **Отключено (Zero)** | Экстремальный профиль с минимальным периодом таймеров |
-| **`ic903-stock-nosmoothing-v4.hex`** | 250 Гц | **Отключено (Zero)** | Заводская частота, но без сглаживания координат |
+| **`ic903-500hz-nosmoothing-v4.hex`** | **500 Hz** | **Disabled (Zero)** | **Recommended:** maximum responsiveness for osu! and drawing |
+| **`ic903-500hz-v4.hex`** | **500 Hz** | Enabled (Stock) | High polling rate with smooth stock coordinate interpolation |
+| **`ic903-1000hz-nosmoothing-v4.hex`** | **1000 Hz** | **Disabled (Zero)** | Experimental high-frequency profile with minimum timer period |
+| **`ic903-stock-nosmoothing-v4.hex`** | 250 Hz | **Disabled (Zero)** | Stock polling frequency with smoothing completely removed |
 
 ---
 
-## 🛠️ Инструкция по прошивке планшета
+## 🛠️ Flashing Guide
 
-### Шаг 1. Подготовка
-1. Подключите планшет XP-Pen Deco 01 V3 к компьютеру через USB.
-2. Закройте официальный драйвер XP-Pen в трее, чтобы он не перехватывал USB-трафик.
-3. Откройте терминал PowerShell в папке проекта:
+### Step 1. Preparation
+1. Connect your XP-Pen Deco 01 V3 tablet to your computer via USB.
+2. Close the official XP-Pen driver software from the system tray to prevent USB endpoint conflicts.
+3. Open a PowerShell or Command Prompt terminal in the project root:
    ```powershell
    cd E:\Coding\tablet-reverse-engeneering
    ```
 
-### Шаг 2. Перевод в режим загрузчика (DFU)
-Выполните команду:
+### Step 2. Enter DFU Bootloader Mode
+Run:
 ```powershell
 .\tools\xppen-tools.exe dfu
 ```
-Планшет перезагрузится в режим DFU (индикатор на планшете может погаснуть или изменить режим мигания).
+The tablet will reboot into its resident DFU bootloader (the LED indicator may turn off or change blinking pattern).
 
-### Шаг 3. Запись прошивки
-Запишите выбранную прошивку (например, 500 Гц без сглаживания):
+### Step 3. Flash the Firmware
+Flash your chosen firmware (for example, 500 Hz with No-Smoothing):
 ```powershell
 .\tools\xppen-tools.exe update firmwares\custom_firmware\v4\ic903-500hz-nosmoothing-v4.hex
 ```
-Утилита сотрет область приложения, запишет модифицированные блоки и выполнит перезагрузку планшета в нормальный рабочий режим.
+The utility will erase the application flash sector, write the patched blocks, verify memory, and reboot the tablet into normal runtime mode.
 
-### Шаг 4. Проверка частоты опроса
-Запустите встроенный монитор:
+### Step 4. Verify Live Polling Rate
+Run the real-time hardware monitor:
 ```powershell
 .\tools\xppen-tools.exe monitor
 ```
-Поводите пером над поверхностью планшета — в консоли отобразится статус нажатия, координаты и **измеренная частота опроса (Hz)** в реальном времени.
+Move the stylus across the active area. The console will display real-time coordinates, pressure, and the **live measured report rate (Hz)**.
 
 ---
 
-## ↩️ Возврат на заводскую прошивку (Stock)
+## ↩️ Reverting to Factory Stock Firmware
 
-Если вы захотите вернуть абсолютно заводскую прошивку, выполните:
+To restore the factory firmware at any time:
 ```powershell
 .\tools\xppen-tools.exe dfu
 .\tools\xppen-tools.exe update firmwares\original_firmware\ic903-stock.hex
@@ -99,39 +103,39 @@ tablet-reverse-engeneering/
 
 ---
 
-## 🏗️ Сборка собственной прошивки из исходников
+## 🏗️ Building Custom Firmware from Source
 
-Если вы хотите собрать прошивку с индивидуальными параметрами, воспользуйтесь скриптом [`src/build_firmware.js`](src/build_firmware.js) (требуется установленный Node.js 18+):
+If you want to compile custom firmware variants with customized parameters, use [`src/build_firmware.js`](src/build_firmware.js) (requires Node.js 18+):
 
-### Собрать все прошивки v4:
+### Build all variants for version v4:
 ```powershell
 node src/build_firmware.js --all --version v4
 ```
 
-### Собрать конкретный вариант:
+### Build a specific configuration:
 ```powershell
-# 500Hz без сглаживания:
+# 500Hz + Zero Smoothing:
 node src/build_firmware.js --version v4 --hz 500 --no-smoothing
 
-# 1000Hz без сглаживания:
+# 1000Hz + Zero Smoothing:
 node src/build_firmware.js --version v4 --hz 1000 --no-smoothing
 
-# Заводская частота без сглаживания:
+# Stock 250Hz + Zero Smoothing:
 node src/build_firmware.js --version v4 --hz 250 --no-smoothing
 ```
 
 ---
 
-## 🔍 Анализ прошивки
+## 🔍 Firmware Inspection Tool
 
-Для быстрой проверки параметров любого скомпилированного `.bin` файла доступен встроенный анализатор:
+To verify patched parameters inside any generated `.bin` file:
 ```powershell
 node src/analyze_firmware.js firmwares/custom_firmware/v4/ic903-500hz-nosmoothing-v4.bin
 ```
-Он выведет текущие значения дескрипторов USB, таймеров ARR, задержек катушек, конфигурацию сетки катушек и статус фильтра сглаживания.
+The tool will inspect USB endpoint descriptors, timer ARR values, settling delay constants, coil matrix mapping, and coordinate filter pointers.
 
 ---
 
-## ⚠️ Предостережение (Disclaimer)
+## ⚠️ Disclaimer
 
-Проект создан энтузиастами для сообщества. Разработчики не несут ответственности за возможные неполадки оборудования при использовании нестандартных прошивок. Запрещается модифицировать загрузчик (`bootloader.bin`) во избежание окирпичивания планшета.
+This project is created by enthusiasts for the community. Use at your own risk. The authors are not responsible for any hardware issues resulting from third-party firmware flashing. Do not attempt to modify the bootloader sector (`bootloader.bin`).
